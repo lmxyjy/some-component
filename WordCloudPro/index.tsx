@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-properties */
 // 封装词云组件
 import { FC, ReactElement, useRef, useEffect, useMemo, useState, memo } from 'react';
 import WordCloud from 'wordcloud';
