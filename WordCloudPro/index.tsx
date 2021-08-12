@@ -1,6 +1,6 @@
 /* eslint-disable no-restricted-properties */
 // 封装词云组件
-import { FC, ReactElement, useRef, useEffect, useMemo, useState } from 'react';
+import { FC, ReactElement, useRef, useEffect, useMemo, useState, memo } from 'react';
 import WordCloud from 'wordcloud';
 import styles from './index.module.less';
 import _ from 'lodash';
@@ -9,7 +9,7 @@ type Op = WordCloud.Options;
 
 interface IProps {
   // 源数据 例如： [['foo', 1200], ['bar', 6], ['foo1', 1], ['bar1', 2]]
-  sourceData?: [string, number][];
+  data?: [string, number][];
   // 最大字体大小
   maxFontSize?: number;
   // 覆盖配置
@@ -20,7 +20,7 @@ interface IProps {
 
 const WordCouldPro: FC<IProps> = (props): ReactElement => {
   const {
-    sourceData = [
+    data = [
       ['foo', 1200],
       ['bar', 6],
       ['foo1', 1],
@@ -40,9 +40,9 @@ const WordCouldPro: FC<IProps> = (props): ReactElement => {
     let min = 0;
     let max = 0;
     if (_.isEmpty(computedValue)) {
-      const len = sourceData.length;
+      const len = data.length;
       for (let x = 0; x < len; x++) {
-        const val = sourceData[x][1];
+        const val = data[x][1];
         if (min > val) min = val;
         if (max < val) max = val;
       }
@@ -68,6 +68,11 @@ const WordCouldPro: FC<IProps> = (props): ReactElement => {
     const a = (maxFontSize - 14) / (Math.pow(max, r) - Math.pow(min, r));
     const b = maxFontSize - a * Math.pow(max, r);
     return Math.ceil(a * Math.pow(weight, r) + b);
+    // const minFontSize = 12;
+    // console.log(weight)
+    // let fontSize = weight / max;
+    // if (fontSize < minFontSize) fontSize = minFontSize;
+    // return fontSize
   };
 
   // 设置不同权重的颜色透明度
@@ -80,17 +85,17 @@ const WordCouldPro: FC<IProps> = (props): ReactElement => {
 
     if (max === min && R && G && B) return `rgba(${R},${G},${B},1)`;
 
-    // const maxOpacity = 1
+    const maxOpacity = 1
     const minOpacity = 0.4;
 
-    // const r = 1 / 10;
-    // const a = (maxOpacity - minOpacity) / (Math.pow(max, r) - Math.pow(min, r));
-    // const b = maxOpacity - a * Math.pow(max, r);
+    const r = 1 / 10;
+    const a = (maxOpacity - minOpacity) / (Math.pow(max, r) - Math.pow(min, r));
+    const b = maxOpacity - a * Math.pow(max, r);
 
-    // const opacity = a * Math.pow(weight, r) + b;
+    const opacity = a * Math.pow(weight, r) + b;
 
-    let opacity = weight / max;
-    if (opacity < minOpacity) opacity = minOpacity;
+    // let opacity = weight / max;
+    // if (opacity < minOpacity) opacity = minOpacity;
     return `rgba(${R},${G},${B},${opacity})`;
   };
 
@@ -98,11 +103,11 @@ const WordCouldPro: FC<IProps> = (props): ReactElement => {
   const newOptions: Op = useMemo(
     () => ({
       origin: [220, 50],
-      ellipticity: -10,
+      ellipticity: -1,
       backgroundColor: 'transparent',
-      list: sourceData,
+      list: data,
       weightFactor(weight: number) {
-        if (!sourceData.length) return 14;
+        if (!data.length) return 14;
         return setFontSize(weight);
       },
       color: (typeof color === 'string' || setColor) as any,
@@ -110,7 +115,7 @@ const WordCouldPro: FC<IProps> = (props): ReactElement => {
       ...options,
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }),
-    [sourceData, options, color],
+    [data, options, color],
   );
 
   useEffect(() => {
@@ -122,4 +127,4 @@ const WordCouldPro: FC<IProps> = (props): ReactElement => {
   return <div className={styles.container} ref={wordCouldRef}></div>;
 };
 
-export default WordCouldPro;
+export default memo(WordCouldPro);
