@@ -38,17 +38,26 @@ const requestCallback = async (args: IRequestCallbackArgs) => {
 
   try {
     const res = await reqFn();
-    const result = res?.data?.data || res?.data?.value;
-    if (
-      (typeof result === "number" && result >= 1) ||
-      (typeof result === "object" && !_.isEmpty(result))
-    ) {
-      // 获取值得操作是不用提示成功的
-      typeof result === "number" && message.success(sTip || "操作成功");
+    // 处理promise.all
+    if (Array.isArray(res)) {
+      const result = res.map((resItem) => {
+        const _data = resItem?.data?.data || resItem?.data?.value;
+        return _data;
+      });
       onSuccess && onSuccess(result);
     } else {
-      message.error(fTip || "操作失败");
-      onFailed && onFailed(res?.data);
+      const result = res?.data?.data || res?.data?.value;
+      if (
+        (typeof result === "number" && result >= 1) ||
+        (typeof result === "object" && !_.isEmpty(result))
+      ) {
+        // 获取值得操作是不用提示成功的
+        typeof result === "number" && message.success(sTip || "操作成功");
+        onSuccess && onSuccess(result);
+      } else {
+        message.error(fTip || "操作失败");
+        onFailed && onFailed(res?.data);
+      }
     }
   } catch (error: any) {
     message.error(eTip || error.message || "系统繁忙，请稍后重试");
