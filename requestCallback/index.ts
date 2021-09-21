@@ -16,7 +16,7 @@ interface IRequestCallbackArgs {
    */
   onFailed?: (error: any) => void;
   /**
-   *
+   * 最终回调
    */
   onFinally?: () => void;
   /**
@@ -31,10 +31,33 @@ interface IRequestCallbackArgs {
    * 异常提示
    */
   eTip?: string;
+  /**
+   * 是否显示成功提示，默认为true
+   */
+  isSTip?: boolean;
+  /**
+   * 是否显示失败提示，默认为true
+   */
+  isFTip?: boolean;
+  /**
+   * 是否显示异常提示，默认为true
+   */
+  isETip?: boolean;
 }
 
 const requestCallback = async (args: IRequestCallbackArgs) => {
-  const { reqFn, onSuccess, onFailed, onFinally, sTip, fTip, eTip } = args;
+  const {
+    reqFn,
+    onSuccess,
+    onFailed,
+    onFinally,
+    sTip,
+    fTip,
+    eTip,
+    isFTip = true,
+    isSTip = true,
+    isETip = true,
+  } = args;
 
   try {
     const res = await reqFn();
@@ -52,15 +75,17 @@ const requestCallback = async (args: IRequestCallbackArgs) => {
         (typeof result === "object" && !_.isEmpty(result))
       ) {
         // 获取值得操作是不用提示成功的
-        typeof result === "number" && message.success(sTip || "操作成功");
+        typeof result === "number" &&
+          isSTip &&
+          message.success(sTip || "操作成功");
         onSuccess && onSuccess(result);
       } else {
-        message.error(fTip || "操作失败");
+        isFTip && message.error(fTip || "操作失败");
         onFailed && onFailed(res?.data);
       }
     }
   } catch (error: any) {
-    message.error(eTip || error.message || "系统繁忙，请稍后重试");
+    isETip && message.error(eTip || error.message || "系统繁忙，请稍后重试");
     onFailed && onFailed(error);
   } finally {
     onFinally && onFinally();
