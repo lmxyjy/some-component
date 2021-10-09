@@ -10,7 +10,7 @@ const useUnmountedRef = () => {
     }
   },[])
 
-  return unmountedRef.current
+  return unmountedRef.current as boolean
 }
 
 export default useUnmountedRef
