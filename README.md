@@ -1,2 +1,4 @@
 # some-component
-some useful component for work
+some useful component for work.
+
+
